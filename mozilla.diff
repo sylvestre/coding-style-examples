@@ -1,0 +1,175 @@
+--- PresentationRequest.original.cpp	2018-08-31 12:09:21.514994375 +0200
++++ PresentationRequest.Mozilla.cpp	2018-08-31 12:08:24.822442286 +0200
+@@ -49,8 +49,10 @@
+   nsCOMPtr<nsIURI> uri;
+   nsresult rv;
+   if (aDocument) {
+-    rv = NS_NewURI(getter_AddRefs(uri), aUrl,
+-                   aDocument->GetDocumentCharacterSet(), aBaseUri);
++    rv = NS_NewURI(getter_AddRefs(uri),
++                   aUrl,
++                   aDocument->GetDocumentCharacterSet(),
++                   aBaseUri);
+   } else {
+     rv = NS_NewURI(getter_AddRefs(uri), aUrl, nullptr, aBaseUri);
+   }
+@@ -82,7 +84,8 @@
+                                  const Sequence<nsString>& aUrls,
+                                  ErrorResult& aRv)
+ {
+-  nsCOMPtr<nsPIDOMWindowInner> window = do_QueryInterface(aGlobal.GetAsSupports());
++  nsCOMPtr<nsPIDOMWindowInner> window =
++    do_QueryInterface(aGlobal.GetAsSupports());
+   if (!window) {
+     aRv.Throw(NS_ERROR_UNEXPECTED);
+     return nullptr;
+@@ -120,9 +123,7 @@
+ {
+ }
+ 
+-PresentationRequest::~PresentationRequest()
+-{
+-}
++PresentationRequest::~PresentationRequest() {}
+ 
+ bool
+ PresentationRequest::Init()
+@@ -177,8 +178,7 @@
+     return promise.forget();
+   }
+ 
+-  if (IsProhibitMixedSecurityContexts(doc) &&
+-      !IsAllURLAuthenticated()) {
++  if (IsProhibitMixedSecurityContexts(doc) && !IsAllURLAuthenticated()) {
+     promise->MaybeReject(NS_ERROR_DOM_SECURITY_ERR);
+     return promise.forget();
+   }
+@@ -188,7 +188,8 @@
+     return promise.forget();
+   }
+ 
+-  RefPtr<Navigator> navigator = nsGlobalWindowInner::Cast(GetOwner())->Navigator();
++  RefPtr<Navigator> navigator =
++    nsGlobalWindowInner::Cast(GetOwner())->Navigator();
+   if (NS_WARN_IF(aRv.Failed())) {
+     return nullptr;
+   }
+@@ -206,7 +207,7 @@
+   // Generate a session ID.
+   nsCOMPtr<nsIUUIDGenerator> uuidgen =
+     do_GetService("@mozilla.org/uuid-generator;1");
+-  if(NS_WARN_IF(!uuidgen)) {
++  if (NS_WARN_IF(!uuidgen)) {
+     promise->MaybeReject(NS_ERROR_DOM_OPERATION_ERR);
+     return promise.forget();
+   }
+@@ -220,7 +221,7 @@
+ 
+   nsCOMPtr<nsIPresentationService> service =
+     do_GetService(PRESENTATION_SERVICE_CONTRACTID);
+-  if(NS_WARN_IF(!service)) {
++  if (NS_WARN_IF(!service)) {
+     promise->MaybeReject(NS_ERROR_DOM_OPERATION_ERR);
+     return promise.forget();
+   }
+@@ -280,8 +281,7 @@
+     return promise.forget();
+   }
+ 
+-  if (IsProhibitMixedSecurityContexts(doc) &&
+-      !IsAllURLAuthenticated()) {
++  if (IsProhibitMixedSecurityContexts(doc) && !IsAllURLAuthenticated()) {
+     promise->MaybeReject(NS_ERROR_DOM_SECURITY_ERR);
+     return promise.forget();
+   }
+@@ -351,22 +351,17 @@
+ 
+   nsCOMPtr<nsIPresentationService> service =
+     do_GetService(PRESENTATION_SERVICE_CONTRACTID);
+-  if(NS_WARN_IF(!service)) {
++  if (NS_WARN_IF(!service)) {
+     aPromise->MaybeReject(NS_ERROR_DOM_OPERATION_ERR);
+     return;
+   }
+ 
+   nsCOMPtr<nsIPresentationServiceCallback> callback =
+-    new PresentationReconnectCallback(this,
+-                                      aPresentationId,
+-                                      aPromise,
+-                                      connection);
+-
+-  nsresult rv =
+-    service->ReconnectSession(mUrls,
+-                              aPresentationId,
+-                              nsIPresentationService::ROLE_CONTROLLER,
+-                              callback);
++    new PresentationReconnectCallback(
++      this, aPresentationId, aPromise, connection);
++
++  nsresult rv = service->ReconnectSession(
++    mUrls, aPresentationId, nsIPresentationService::ROLE_CONTROLLER, callback);
+   if (NS_WARN_IF(NS_FAILED(rv))) {
+     aPromise->MaybeReject(NS_ERROR_DOM_OPERATION_ERR);
+   }
+@@ -398,8 +393,7 @@
+     return promise.forget();
+   }
+ 
+-  if (IsProhibitMixedSecurityContexts(doc) &&
+-      !IsAllURLAuthenticated()) {
++  if (IsProhibitMixedSecurityContexts(doc) && !IsAllURLAuthenticated()) {
+     promise->MaybeReject(NS_ERROR_DOM_SECURITY_ERR);
+     return promise.forget();
+   }
+@@ -415,7 +409,8 @@
+ }
+ 
+ void
+-PresentationRequest::FindOrCreatePresentationAvailability(RefPtr<Promise>& aPromise)
++PresentationRequest::FindOrCreatePresentationAvailability(
++  RefPtr<Promise>& aPromise)
+ {
+   MOZ_ASSERT(aPromise);
+ 
+@@ -434,7 +429,8 @@
+     collection->Find(GetOwner()->WindowID(), mUrls);
+ 
+   if (!availability) {
+-    availability = PresentationAvailability::Create(GetOwner(), mUrls, aPromise);
++    availability =
++      PresentationAvailability::Create(GetOwner(), mUrls, aPromise);
+   } else {
+     PRES_DEBUG(">resolve with same object\n");
+ 
+@@ -455,7 +451,8 @@
+ }
+ 
+ nsresult
+-PresentationRequest::DispatchConnectionAvailableEvent(PresentationConnection* aConnection)
++PresentationRequest::DispatchConnectionAvailableEvent(
++  PresentationConnection* aConnection)
+ {
+   if (nsContentUtils::ShouldResistFingerprinting()) {
+     return NS_OK;
+@@ -465,9 +462,8 @@
+   init.mConnection = aConnection;
+ 
+   RefPtr<PresentationConnectionAvailableEvent> event =
+-    PresentationConnectionAvailableEvent::Constructor(this,
+-                                                      NS_LITERAL_STRING("connectionavailable"),
+-                                                      init);
++    PresentationConnectionAvailableEvent::Constructor(
++      this, NS_LITERAL_STRING("connectionavailable"), init);
+   if (NS_WARN_IF(!event)) {
+     return NS_ERROR_FAILURE;
+   }
+@@ -487,7 +483,8 @@
+     return;
+   }
+ 
+-  RefPtr<Navigator> navigator = nsGlobalWindowInner::Cast(GetOwner())->Navigator();
++  RefPtr<Navigator> navigator =
++    nsGlobalWindowInner::Cast(GetOwner())->Navigator();
+   if (!navigator) {
+     return;
+   }

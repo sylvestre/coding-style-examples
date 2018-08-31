@@ -16,4 +16,5 @@ BraceWrapping:
 For the others
 BasedOnStyle: XXXX
 
-$ clang-format-7 -i 
+$ clang-format-7 PresentationRequest.original.cpp > PresentationRequest.Mozilla.cpp
+
